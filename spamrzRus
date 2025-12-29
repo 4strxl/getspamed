@@ -82,10 +82,19 @@ top.BackgroundColor3 = BABY_BLUE
 top.BorderSizePixel = 0
 Instance.new("UICorner", top).CornerRadius = UDim.new(0,14)
 
--- TITLE
+-- CHRISTMAS TREE ICON 🎄
+local tree = Instance.new("ImageLabel", top)
+tree.Size = UDim2.fromOffset(24,24) -- adjust size
+tree.Position = UDim2.fromOffset(12,7) -- align vertically
+tree.BackgroundTransparency = 1
+tree.Image = "rbxassetid://YOUR_CHRISTMAS_TREE_IMAGE_ID" -- replace with your asset ID
+tree.ScaleType = Enum.ScaleType.Fit
+tree.AnchorPoint = Vector2.new(0,0)
+
+-- TITLE TEXT
 local title = Instance.new("TextLabel", top)
 title.Size = UDim2.new(1,-130,1,0)
-title.Position = UDim2.fromOffset(12,0)
+title.Position = UDim2.fromOffset(12 + 24 + 6,0) -- tree width + spacing
 title.BackgroundTransparency = 1
 title.Text = TITLE_TEXT
 title.Font = Enum.Font.GothamBold
@@ -96,7 +105,7 @@ title.TextColor3 = Color3.fromRGB(255,255,255)
 -- SNOWFLAKE ICON ❄
 local snowflake = Instance.new("TextLabel", top)
 snowflake.Size = UDim2.fromOffset(20,20)
-snowflake.Position = UDim2.fromOffset(12 + title.TextBounds.X + 10, 19)
+snowflake.Position = UDim2.fromOffset(12 + 24 + 6 + title.TextBounds.X + 10, 19)
 snowflake.BackgroundTransparency = 1
 snowflake.Text = "❄"
 snowflake.Font = Enum.Font.GothamBold
@@ -153,6 +162,77 @@ end
 task.spawn(function()
     while snowflake.Parent do
         createSparkle()
+        task.wait(0.15)
+    end
+end)
+
+-- SNOW AROUND TREE
+local function createTreeSnow()
+    local s = Instance.new("TextLabel")
+    s.Size = UDim2.fromOffset(6,6)
+    s.BackgroundTransparency = 1
+    s.Text = "❄"
+    s.Font = Enum.Font.GothamBold
+    s.TextSize = 14
+    s.TextColor3 = Color3.fromRGB(240,250,255)
+    s.AnchorPoint = Vector2.new(0.5,0.5)
+    s.Position = UDim2.fromOffset(
+        tree.Position.X.Offset + math.random(-12,12),
+        tree.Position.Y.Offset + math.random(-12,12)
+    )
+    s.Rotation = math.random(0,360)
+    s.Parent = top
+
+    local tween = TweenService:Create(
+        s,
+        TweenInfo.new(math.random(1,2)),
+        {
+            TextTransparency = 1,
+            Position = s.Position + UDim2.fromOffset(math.random(-8,8), math.random(-16,-8)),
+            Rotation = s.Rotation + math.random(90,180)
+        }
+    )
+    tween:Play()
+    tween.Completed:Once(function() s:Destroy() end)
+end
+
+task.spawn(function()
+    while tree.Parent do
+        createTreeSnow()
+        task.wait(0.1)
+    end
+end)
+
+-- SNOW ACROSS TOP BAR
+local function createTopSnow()
+    local s = Instance.new("TextLabel")
+    s.Size = UDim2.fromOffset(6,6)
+    s.BackgroundTransparency = 1
+    s.Text = "❄"
+    s.Font = Enum.Font.GothamBold
+    s.TextSize = 14
+    s.TextColor3 = Color3.fromRGB(240,250,255)
+    s.AnchorPoint = Vector2.new(0.5,0.5)
+    s.Position = UDim2.fromOffset(math.random(0,300), math.random(0,38))
+    s.Rotation = math.random(0,360)
+    s.Parent = top
+
+    local tween = TweenService:Create(
+        s,
+        TweenInfo.new(math.random(2,4)),
+        {
+            TextTransparency = 1,
+            Position = UDim2.fromOffset(s.Position.X.Offset + math.random(-8,8), 38 + 6),
+            Rotation = s.Rotation + math.random(90,180)
+        }
+    )
+    tween:Play()
+    tween.Completed:Once(function() s:Destroy() end)
+end
+
+task.spawn(function()
+    while top.Parent do
+        createTopSnow()
         task.wait(0.15)
     end
 end)
