@@ -198,16 +198,16 @@ minBtn.Activated:Connect(function()
     main.Size = minimized and UDim2.fromOffset(300,38) or UDim2.fromOffset(300,380)
 end)
 
--- DRAGGABLE HUB ✅
+-- DRAGGABLE HUB (FIXED)
 do
     local dragging = false
-    local dragStart
-    local startPos
+    local dragStartPos = Vector2.new()
+    local startPos = UDim2.new()
 
     top.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
-            dragStart = input.Position
+            dragStartPos = input.Position
             startPos = main.Position
 
             input.Changed:Connect(function()
@@ -220,11 +220,16 @@ do
 
     top.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            main.Position = UDim2.fromOffset(
-                startPos.X.Offset + delta.X,
-                startPos.Y.Offset + delta.Y
-            )
+            local delta = input.Position - dragStartPos
+            local newX = startPos.X.Offset + delta.X
+            local newY = startPos.Y.Offset + delta.Y
+
+            -- clamp to screen
+            local screenSize = workspace.CurrentCamera.ViewportSize
+            newX = math.clamp(newX, 0, screenSize.X - main.AbsoluteSize.X)
+            newY = math.clamp(newY, 0, screenSize.Y - main.AbsoluteSize.Y)
+
+            main.Position = UDim2.fromOffset(newX, newY)
         end
     end)
 end
