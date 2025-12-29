@@ -241,7 +241,7 @@ do
     end)
 end
 
--- SPAM LOGIC (MAX SPEED + Jail/Ragdoll after death/respawn)
+-- SPAM LOGIC (MAX SPEED + Morph after Rocket + Jail/Ragdoll)
 local lastTarget
 local function spamPlayer(plr)
     if not Remote then
@@ -251,8 +251,22 @@ local function spamPlayer(plr)
 
     lastTarget = plr
 
-    -- Fire all commands at once simultaneously
+    -- Prepare command order: morph always after rocket
+    local customCommands = {}
     for _,cmd in ipairs(COMMANDS) do
+        if cmd ~= "morph" then
+            table.insert(customCommands, cmd)
+        end
+    end
+    for i,cmd in ipairs(customCommands) do
+        if cmd == "rocket" then
+            table.insert(customCommands, i+1, "morph")
+            break
+        end
+    end
+
+    -- Fire all commands simultaneously in custom order
+    for _,cmd in ipairs(customCommands) do
         task.spawn(function()
             pcall(function()
                 Remote:FireServer(plr, cmd)
