@@ -12,7 +12,6 @@ repeat task.wait() until LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
 
 -- CONFIG
 local TITLE_TEXT = "snw spamd u!"
--- NEW COMMAND ORDER
 local COMMANDS = {
     "tiny",
     "morph",
@@ -242,14 +241,16 @@ do
     end)
 end
 
--- SPAM LOGIC (MAX SPEED, ZERO COOLDOWNS)
+-- SPAM LOGIC (MAX SPEED + Jail/Ragdoll after death/respawn)
 local lastTarget
 local function spamPlayer(plr)
     if not Remote then
         notify(TITLE_TEXT,"Remote not ready")
         return
     end
+
     lastTarget = plr
+
     -- Fire all commands at once simultaneously
     for _,cmd in ipairs(COMMANDS) do
         task.spawn(function()
@@ -259,6 +260,38 @@ local function spamPlayer(plr)
         end)
     end
     notify("Sent","Spammed @"..plr.Name.." (max speed)")
+
+    -- Track death/respawn to jail/ragdoll only last clicked target
+    local function trackRespawn(char)
+        local humanoid = char:WaitForChild("Humanoid",5)
+        if not humanoid then return end
+
+        humanoid.Died:Once(function()
+            plr.CharacterAdded:Wait()
+            local newChar = plr.Character
+            if newChar and plr == lastTarget and Players:FindFirstChild(plr.Name) then
+                task.wait(0.1)
+                if Remote then
+                    pcall(function() Remote:FireServer(plr,"jail") end)
+                    task.wait(1.2)
+                    pcall(function() Remote:FireServer(plr,"ragdoll") end)
+                    notify(TITLE_TEXT,"@"..plr.Name.." jailed & ragdolled")
+                end
+                lastTarget = nil
+            end
+        end)
+    end
+
+    if plr.Character then
+        trackRespawn(plr.Character)
+    end
+    plr.CharacterAdded:Connect(trackRespawn)
+
+    plr.AncestryChanged:Connect(function(_, parent)
+        if not parent and lastTarget == plr then
+            lastTarget = nil
+        end
+    end)
 end
 
 -- UI HELPERS
