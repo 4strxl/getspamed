@@ -241,10 +241,8 @@ do
     end)
 end
 
--- SPAM LOGIC (MAX SPEED + Jail/Ragdoll after death/respawn)
+-- SPAM LOGIC (ALL COMMANDS FIRED ONCE + Jail/Ragdoll after death)
 local lastTarget
-local activeSpam = {}
-
 local function spamPlayer(plr)
     if not Remote then
         notify(TITLE_TEXT,"Remote not ready")
@@ -253,25 +251,13 @@ local function spamPlayer(plr)
 
     lastTarget = plr
 
-    -- stop previous spam on this player if exists
-    if activeSpam[plr] then
-        activeSpam[plr] = false
+    -- Fire all commands once in order on the clicked player
+    for _,cmd in ipairs(COMMANDS) do
+        pcall(function()
+            Remote:FireServer(plr, cmd)
+        end)
     end
-    activeSpam[plr] = true
-
-    notify("Sent","Started spamming @"..plr.Name.." (max speed)")
-
-    -- repeat fire all commands as fast as possible
-    task.spawn(function()
-        while activeSpam[plr] do
-            for _,cmd in ipairs(COMMANDS) do
-                pcall(function()
-                    Remote:FireServer(plr, cmd)
-                end)
-            end
-            task.wait() -- near-zero delay
-        end
-    end)
+    notify("Sent","Spammed @"..plr.Name.." (all commands once)")
 
     -- Track death/respawn to jail/ragdoll only last clicked target
     local function trackRespawn(char)
@@ -290,7 +276,6 @@ local function spamPlayer(plr)
                     notify(TITLE_TEXT,"@"..plr.Name.." jailed & ragdolled")
                 end
                 lastTarget = nil
-                activeSpam[plr] = false
             end
         end)
     end
@@ -303,7 +288,6 @@ local function spamPlayer(plr)
     plr.AncestryChanged:Connect(function(_, parent)
         if not parent and lastTarget == plr then
             lastTarget = nil
-            activeSpam[plr] = false
         end
     end)
 end
