@@ -198,6 +198,37 @@ minBtn.Activated:Connect(function()
     main.Size = minimized and UDim2.fromOffset(300,38) or UDim2.fromOffset(300,380)
 end)
 
+-- DRAGGABLE HUB ✅
+do
+    local dragging = false
+    local dragStart
+    local startPos
+
+    top.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = main.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    top.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            main.Position = UDim2.fromOffset(
+                startPos.X.Offset + delta.X,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
 -- SPAM LOGIC (unchanged)
 local lastTarget
 local function spamPlayer(plr)
