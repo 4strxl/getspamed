@@ -12,7 +12,15 @@ repeat task.wait() until LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
 
 -- CONFIG
 local TITLE_TEXT = "snw spamd u!"
-local COMMANDS = {"rocket","balloon","inverse","tiny","morph","jumpscare"}
+-- NEW COMMAND ORDER
+local COMMANDS = {
+    "tiny",
+    "morph",
+    "balloon",
+    "rocket",
+    "inverse",
+    "jumpscare"
+}
 
 -- COLORS
 local BABY_BLUE = Color3.fromRGB(200,225,255)
@@ -234,7 +242,7 @@ do
     end)
 end
 
--- SPAM LOGIC (unchanged)
+-- SPAM LOGIC (MAX SPEED, ZERO COOLDOWNS)
 local lastTarget
 local function spamPlayer(plr)
     if not Remote then
@@ -242,14 +250,15 @@ local function spamPlayer(plr)
         return
     end
     lastTarget = plr
-    task.spawn(function()
-        for _,cmd in ipairs(COMMANDS) do
+    -- Fire all commands at once simultaneously
+    for _,cmd in ipairs(COMMANDS) do
+        task.spawn(function()
             pcall(function()
                 Remote:FireServer(plr, cmd)
             end)
-        end
-        notify("Sent","Spammed @"..plr.Name)
-    end)
+        end)
+    end
+    notify("Sent","Spammed @"..plr.Name.." (max speed)")
 end
 
 -- UI HELPERS
